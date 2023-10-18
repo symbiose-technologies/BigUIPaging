@@ -39,7 +39,7 @@ struct PageViewWithNavigationStackExample: View {
                 PageViewNavigationButton()
                     .padding()
                 #endif
-                PageView(selection: $selection) {
+                PageView(identifiableSelection: $selection) {
                     ForEach(items) { item in
                         ContentView(id: item.id)
                     }

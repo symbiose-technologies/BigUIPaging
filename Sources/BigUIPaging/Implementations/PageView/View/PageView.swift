@@ -196,7 +196,7 @@ extension PageView {
     ///   - selection: A binding to a selected value.
     ///   - content: A `ForEach` containing some identifiable data.
     public init<Data>(
-        selection: Binding<SelectionValue>,
+        identifiableSelection selection: Binding<SelectionValue>,
         content: () -> ForEach<Data, Data.Element.ID, Page>
     ) where Data : RandomAccessCollection, Data.Element : Identifiable, SelectionValue == Data.Element.ID {
         let content = content()
