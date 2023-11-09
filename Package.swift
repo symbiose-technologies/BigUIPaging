@@ -11,11 +11,15 @@ let package = Package(
             name: "BigUIPaging",
             targets: ["BigUIPaging"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.0.0")
+    ],
     targets: [
         .target(
             name: "BigUIPaging",
-            dependencies: []),
+            dependencies: [
+                .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
+            ]),
         .testTarget(
             name: "BigUIPagingTests",
             dependencies: ["BigUIPaging"]),

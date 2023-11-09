@@ -1,4 +1,5 @@
 import SwiftUI
+import IdentifiedCollections
 
 /// A container view that manages navigation between related views.
 ///
@@ -100,7 +101,9 @@ import SwiftUI
 /// .pageViewEnvironment()
 /// ```
 ///
-public struct PageView<SelectionValue, Page>: View where SelectionValue: Hashable, Page: View {
+public struct PageView<SelectionValue: Hashable, Page: View>: View
+//where SelectionValue: Hashable, Page: View
+{
     
     @Binding var selection: SelectionValue
     let next: (SelectionValue) -> SelectionValue?
@@ -131,8 +134,10 @@ public struct PageView<SelectionValue, Page>: View where SelectionValue: Hashabl
     
     @Environment(\.pageViewStyle) private var style
     
+    
     public var body: some View {
         AnyView(style.makeConcreteView(configuration))
+//        style.makeConcreteView(configuration)
             .environment(\.navigatePageView, configuration.navigateAction(id))
             .preference(
                 key: PageViewCanNavigatePreference.self,
@@ -198,7 +203,7 @@ extension PageView {
     public init<Data>(
         identifiableSelection selection: Binding<SelectionValue>,
         content: () -> ForEach<Data, Data.Element.ID, Page>
-    ) where Data : RandomAccessCollection, Data.Element : Identifiable, SelectionValue == Data.Element.ID {
+    ) where Data : RandomAccessCollection, Data.Element : Identifiable<SelectionValue> {
         let content = content()
         let data = content.data
         let page = content.content
@@ -225,6 +230,43 @@ extension PageView {
             page(value)
         }
     }
+    
+    /// Creates a new page view that computes its pages on demand from an underlying collection of
+    /// identifiable data.
+    /// - Parameters:
+    ///   - selection: A binding to a selected value.
+    ///   - content: A `ForEach` containing some identifiable data.
+    public init<EachState>(
+        identifiedSel selection: Binding<SelectionValue>,
+        content: () -> ForEach<IdentifiedArray<SelectionValue, EachState>, SelectionValue, Page>
+    ) where EachState: Identifiable<SelectionValue> {
+        let content = content()
+        let data = content.data
+        let page = content.content
+        self.init(selection: selection) { id in
+            guard let index = data.firstIndex(where: { $0.id == id }) else {
+                return nil
+            }
+            let next = data.index(after: index)
+            guard data.indices.contains(next) else {
+                return nil
+            }
+            return data[next].id
+        } previous: { id in
+            guard let index = data.firstIndex(where: { $0.id == id }) else {
+                return nil
+            }
+            let prev = data.index(before: index)
+            guard data.indices.contains(prev) else {
+                return nil
+            }
+            return data[prev].id
+        } content: { id in
+            let value = data.first(where: { $0.id == id }) ?? data[data.startIndex]
+            page(value)
+        }
+    }
+    
 }
 
 // MARK: - Style Handling
