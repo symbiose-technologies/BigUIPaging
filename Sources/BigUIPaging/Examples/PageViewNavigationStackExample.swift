@@ -1,25 +1,37 @@
 import SwiftUI
 
 /// An example of how to use page view inside a NavigationStack.
+
+@available(iOS 17.0, *)
 struct PageViewWithNavigationStackExample: View {
     
     var body: some View {
         NavigationStack {
             RootView()
+                .background(Color.orange.opacity(0.2).gradient)
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
                         PageViewNavigationButton()
                             .pageViewOrientation(.vertical)
                     }
                 }
+                .toolbarTitleDisplayMode(.inlineLarge)
+
         }
-        #if os(macOS)
-        .pageViewStyle(.bookStack)
-        #else
+        .background(Color.blue)
+
+//        #if os(macOS)
+//        .pageViewStyle(.bookStack)
+//        #else
+//        .pageViewStyle(.scroll)
+//        #endif
         .pageViewStyle(.scroll)
-        #endif
-        .pageContentBackground(.visible)
+        .pageContentBackground(.hidden)
+        
         .pageViewEnvironment()
+        .toolbarTitleDisplayMode(.large)
+
+
     }
     
     struct RootView: View {
@@ -46,7 +58,10 @@ struct PageViewWithNavigationStackExample: View {
                 }
                 .ignoresSafeArea()
                 .navigationTitle("Message \(selection)")
+                .toolbarTitleDisplayMode(.inlineLarge)
             }
+            .background(.clear)
+            
         }
     }
     
@@ -65,14 +80,17 @@ struct PageViewWithNavigationStackExample: View {
                     Text(String.corporateIpsum)
                 }
                 .scenePadding()
+                .background(.clear)
             }
-            .background(.background)
+            .background(.clear)
+//            .background(.background)
         }
     }
 }
 
 // MARK: - Preview
 
+@available(iOS 17.0, *)
 struct PageViewWithNavigationStackExample_Previews: PreviewProvider {
     
     static var previews: some View {

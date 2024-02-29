@@ -5,13 +5,16 @@ struct PageViewBasicExample: View {
     
     @State private var selection: Int = 1
     
+    
     var body: some View {
-        PageView(selection: $selection) { value in
+        PageView(selection: $selection, explicitStyle: Optional<PlainPageViewStyle>.none) { value in
             value + 1
         } previous: { value in
             value > 1 ? value - 1 : nil
         } content: { value in
             ExamplePage(value: value)
+                .transition(.scale(scale: 0.2))
+                .animation(.easeIn(duration: 4), value: selection)
         }
         .ignoresSafeArea()
         #if os(iOS)
@@ -25,6 +28,42 @@ struct PageViewBasicExample: View {
         #endif
     }
 }
+struct SPageViewBasicExample<S: PageViewStyle>: View {
+    
+    @State private var selection: Int = 1
+    var style: S
+    
+    var body: some View {
+        PageView(selection: $selection, explicitStyle: style) { value in
+            value + 1
+        } previous: { value in
+            value > 1 ? value - 1 : nil
+        } content: { value in
+            VStack {
+                ExamplePage(value: value)
+                    .transition(.move(edge: .bottom))
+            }
+//                .transition(AnyTransition.slide.animation(.easeInOut(duration: 0.2)))
+//                .transition(AnyTransition.scale(scale: 0.2).animation(.easeInOut(duration: 0.2)))
+
+//                .transition(.scale(scale: 0.2))
+
+        }
+        
+        .ignoresSafeArea()
+        #if os(iOS)
+        .overlay(alignment: .bottom) {
+            PageIndicator(
+                selection: $selection,
+                total: 100
+            )
+            .pageIndicatorBackgroundStyle(.prominent)
+        }
+        #endif
+        .animation(.easeIn(duration: 0.1), value: selection)
+
+    }
+}
 
 // MARK: - Preview
 
@@ -33,6 +72,10 @@ struct PageViewBasicExample_Previews: PreviewProvider {
     static var previews: some View {
         PageViewBasicExample()
             .pageViewStyle(.scroll)
+        VStack {
+            SPageViewBasicExample(style: PlainPageViewStyle())
+        }
+//            .pageViewStyle(.scroll)
     }
 }
 

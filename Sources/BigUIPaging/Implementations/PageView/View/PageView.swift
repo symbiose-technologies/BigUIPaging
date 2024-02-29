@@ -100,7 +100,11 @@ import SwiftUI
 /// .pageViewEnvironment()
 /// ```
 ///
-public struct PageView<SelectionValue, Page>: View where SelectionValue: Hashable, Page: View {
+
+
+
+
+public struct PageView<SelectionValue, Page, S: PageViewStyle>: View where SelectionValue: Hashable, Page: View {
     
     @Binding var selection: SelectionValue
     let next: (SelectionValue) -> SelectionValue?
@@ -108,6 +112,8 @@ public struct PageView<SelectionValue, Page>: View where SelectionValue: Hashabl
     @ViewBuilder let pageContent: (SelectionValue) -> Page
     @State private var id = UUID()
     @StateObject private var values: ValueStore
+    
+    let explicitStyle: S?
     
     /// Creates a new page view that computes its pages using closures to determine the next and previous
     /// page value.
@@ -118,6 +124,7 @@ public struct PageView<SelectionValue, Page>: View where SelectionValue: Hashabl
     ///   - content: A view builder that returns the page content for a given value.
     public init(
         selection: Binding<SelectionValue>,
+        explicitStyle: S? = nil,
         next: @escaping (SelectionValue) -> SelectionValue?,
         previous: @escaping (SelectionValue) -> SelectionValue?,
         @ViewBuilder content: @escaping (SelectionValue) -> Page
@@ -126,13 +133,14 @@ public struct PageView<SelectionValue, Page>: View where SelectionValue: Hashabl
         self.next = next
         self.previous = previous
         self.pageContent = content
+        self.explicitStyle = explicitStyle
         self._values = StateObject(wrappedValue: ValueStore(next, previous))
     }
     
     @Environment(\.pageViewStyle) private var style
     
     public var body: some View {
-        AnyView(style.makeConcreteView(configuration))
+        container
             .environment(\.navigatePageView, configuration.navigateAction(id))
             .preference(
                 key: PageViewCanNavigatePreference.self,
@@ -143,6 +151,16 @@ public struct PageView<SelectionValue, Page>: View where SelectionValue: Hashabl
                 value: configuration.navigateAction(id)
             )
     }
+    
+    @ViewBuilder
+    var container: some View {
+        if let explicitStyle {
+            explicitStyle.makeConcreteView(configuration)
+        } else {
+            AnyView(style.makeConcreteView(configuration))
+        }
+    }
+    
 }
 
 // MARK: - Convenience initialisers
@@ -156,12 +174,14 @@ extension PageView {
     ///   - content: A `ForEach` containing some hashable data.
     public init<Data>(
         selection: Binding<SelectionValue>,
+        explicitStyle: S? = Optional<PlainPageViewStyle>.none,
         content: () -> ForEach<Data, Data.Element, Page>
     ) where Data : RandomAccessCollection, SelectionValue == Data.Element {
         let content = content()
         let data = content.data
         let page = content.content
-        self.init(selection: selection) { value in
+        self.init(selection: selection,
+                  explicitStyle: explicitStyle) { value in
             guard let index = data.firstIndex(of: value) else {
                 return nil
             }
@@ -197,12 +217,14 @@ extension PageView {
     ///   - content: A `ForEach` containing some identifiable data.
     public init<Data>(
         selection: Binding<SelectionValue>,
+        explicitStyle: S? = Optional<PlainPageViewStyle>.none,
         content: () -> ForEach<Data, Data.Element.ID, Page>
     ) where Data : RandomAccessCollection, Data.Element : Identifiable, SelectionValue == Data.Element.ID {
         let content = content()
         let data = content.data
         let page = content.content
-        self.init(selection: selection) { id in
+        self.init(selection: selection,
+                  explicitStyle: explicitStyle) { id in
             guard let index = data.firstIndex(where: { $0.id == id }) else {
                 return nil
             }
