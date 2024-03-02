@@ -2,7 +2,7 @@ import SwiftUI
 
 /// An example of how to use page view inside a NavigationStack.
 
-@available(iOS 17.0, *)
+@available(iOS 17.0, macOS 14.0, *)
 struct PageViewWithNavigationStackExample: View {
     
     var body: some View {
@@ -29,9 +29,11 @@ struct PageViewWithNavigationStackExample: View {
         .pageContentBackground(.hidden)
         
         .pageViewEnvironment()
+        #if os(iOS)
         .toolbarTitleDisplayMode(.large)
+        #endif
 
-
+        
     }
     
     struct RootView: View {
@@ -90,7 +92,7 @@ struct PageViewWithNavigationStackExample: View {
 
 // MARK: - Preview
 
-@available(iOS 17.0, *)
+@available(iOS 17.0, macOS 14.0, *)
 struct PageViewWithNavigationStackExample_Previews: PreviewProvider {
     
     static var previews: some View {
