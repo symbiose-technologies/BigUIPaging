@@ -4,8 +4,7 @@ import SwiftUI
 ///
 /// This style mimics the behaviour of the photo stack in iMessage and Big News.
 ///
-@available(macOS, unavailable)
-@available(iOS 16.0, *)
+@available(iOS 16.0, macOS 13.0,  *)
 public struct CardDeckPageViewStyle: PageViewStyle {
     
     public init() { }
@@ -212,8 +211,7 @@ extension View {
     }
 }
 
-@available(macOS, unavailable)
-@available(iOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 extension PageViewStyle where Self == CardDeckPageViewStyle {
     
     /// A style that presents pages as a whimsical deck of cards.
